@@ -1,7 +1,20 @@
-import React from "react";
+import { db } from "@/lib/db";
+import { Board } from "./board";
+import { Form } from "./form";
 
-const OrganizationIdPage = () => {
-  return <div>Organization Page</div>;
+const OrganizationIdPage = async () => {
+  const baords = await db.board.findMany({});
+
+  return (
+    <div className="flex flex-col space-y-4">
+      <Form />
+      <div className="space-y-4">
+        {baords.map((board) => (
+          <Board key={board.id} id={board.id} title={board.title} />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default OrganizationIdPage;

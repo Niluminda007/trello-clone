@@ -11,7 +11,7 @@
 
 
 datasource db {
-  provider = "sqlserver"
+  provider = "postgres"
   url      = env("DATABASE_URL")
   relationMode = "prisma"
 }
@@ -65,4 +65,32 @@ model Card {
   updatedAt     DateTime @updatedAt
 
   @@index([listId])
+}
+
+enum ACTION {
+  CREATE
+  DELETE
+  UPDATE
+
+}
+
+enum ENTITY_TYPE {
+  BOARD
+  LIST
+  CARD
+}
+
+model AuditLog {
+  id          String @id @default(uuid())
+  orgId       String
+  action      ACTION
+  entityId    String
+  entityType  ENTITY_TYPE
+  entityTitle String
+  userId      String
+  userImage   String @db.Text
+  userName    String @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

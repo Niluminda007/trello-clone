@@ -1,47 +1,69 @@
 "use server";
 
+import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
+import { CopyList } from "./schema";
 import { db } from "@/lib/db";
-import { CreateList } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const { orgId, userId } = auth();
   if (!orgId || !userId) {
     return {
-      error: "unauthorized!!!",
+      error: "Unautorized!",
     };
   }
-  const { boardId, title } = data;
+  const { id, boardId } = data;
   let list;
   try {
-    const board = await db.board.findUnique({
+    const listToCopy = await db.list.findUnique({
       where: {
-        id: boardId,
-        orgId,
+        id,
+        boardId,
+        board: {
+          orgId,
+        },
+      },
+      include: {
+        cards: true,
       },
     });
-    if (!board) {
+    if (!listToCopy) {
       return {
-        error: "Board not found",
+        error: "List not found",
       };
     }
     const lastList = await db.list.findFirst({
-      where: { boardId: boardId },
+      where: {
+        boardId,
+      },
       orderBy: { order: "desc" },
-      select: { order: true },
+      select: {
+        order: true,
+      },
     });
     const newOrder = lastList ? lastList.order + 1 : 1;
     list = await db.list.create({
       data: {
-        title,
-        boardId: boardId,
+        boardId: listToCopy.boardId,
+        title: `${listToCopy.title} - Copy`,
         order: newOrder,
+        cards: {
+          createMany: {
+            data: listToCopy.cards.map((card) => ({
+              title: card.title,
+              description: card.description,
+              order: card.order,
+            })),
+          },
+        },
+      },
+      include: {
+        cards: true,
       },
     });
     await createAuditLog({
@@ -52,11 +74,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     });
   } catch (error) {
     return {
-      error: "Failed to Create List",
+      error: "Error Copy",
     };
   }
   revalidatePath(`/board/${boardId}`);
-  return { data: list };
+  return {
+    data: list,
+  };
 };
 
-export const createList = createSafeAction(CreateList, handler);
+export const copyList = createSafeAction(CopyList, handler);

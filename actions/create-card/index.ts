@@ -1,62 +1,65 @@
 "use server";
 
+import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
+import { CreateCard } from "./schema";
 import { db } from "@/lib/db";
-import { CreateList } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const { orgId, userId } = auth();
   if (!orgId || !userId) {
     return {
-      error: "unauthorized!!!",
+      error: "Unauthorized",
     };
   }
-  const { boardId, title } = data;
-  let list;
+  const { title, listId, boardId } = data;
+  let card;
   try {
-    const board = await db.board.findUnique({
+    const list = await db.list.findUnique({
       where: {
-        id: boardId,
-        orgId,
+        id: listId,
+        board: {
+          orgId,
+        },
       },
     });
-    if (!board) {
+    if (!list) {
       return {
-        error: "Board not found",
+        error: "List not found",
       };
     }
-    const lastList = await db.list.findFirst({
-      where: { boardId: boardId },
+    const lastcard = await db.card.findFirst({
+      where: { listId },
       orderBy: { order: "desc" },
       select: { order: true },
     });
-    const newOrder = lastList ? lastList.order + 1 : 1;
-    list = await db.list.create({
+    const newOrder = lastcard ? lastcard.order + 1 : 1;
+
+    card = await db.card.create({
       data: {
         title,
-        boardId: boardId,
+        listId,
         order: newOrder,
       },
     });
     await createAuditLog({
-      entityId: list.id,
-      entityTitle: list.title,
-      entityType: ENTITY_TYPE.LIST,
+      entityId: card.id,
+      entityTitle: card.title,
+      entityType: ENTITY_TYPE.CARD,
       action: ACTION.CREATE,
     });
   } catch (error) {
     return {
-      error: "Failed to Create List",
+      error: "Failed to create",
     };
   }
   revalidatePath(`/board/${boardId}`);
-  return { data: list };
+  return { data: card };
 };
 
-export const createList = createSafeAction(CreateList, handler);
+export const createCard = createSafeAction(CreateCard, handler);

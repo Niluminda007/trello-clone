@@ -7,7 +7,7 @@ import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { createSafeAction } from "@/lib/create-safe-action";
-import { UpdateBoard } from "./schema";
+import { UpdateCard } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
@@ -18,22 +18,26 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Unauthorized",
     };
   }
-  const { title, id } = data;
-  let board;
+  const { id, boardId, ...values } = data;
+  let card;
   try {
-    board = await db.board.update({
+    card = await db.card.update({
       where: {
         id,
-        orgId,
+        list: {
+          board: {
+            orgId,
+          },
+        },
       },
       data: {
-        title,
+        ...values,
       },
     });
     await createAuditLog({
-      entityId: board.id,
-      entityTitle: board.title,
-      entityType: ENTITY_TYPE.BOARD,
+      entityId: card.id,
+      entityTitle: card.title,
+      entityType: ENTITY_TYPE.CARD,
       action: ACTION.UPDATE,
     });
   } catch (error) {
@@ -41,10 +45,10 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to update.",
     };
   }
-  revalidatePath(`/baord/${id}`);
+  revalidatePath(`/baord/${boardId}`);
   return {
-    data: board,
+    data: card,
   };
 };
 
-export const updateBoard = createSafeAction(UpdateBoard, handler);
+export const updateCard = createSafeAction(UpdateCard, handler);

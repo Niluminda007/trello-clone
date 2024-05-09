@@ -1,13 +1,18 @@
-import React from "react";
-import { LayoutType } from "@/types/layout";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { ClerkProvider } from "@clerk/nextjs";
+
+import { LayoutType } from "@/types/layout";
+import ModalProvider from "@/components/providers/modal-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const PlatformLayout = ({ children }: LayoutType) => {
   return (
     <ClerkProvider>
-      <Toaster />
-      {children}
+      <QueryProvider>
+        <Toaster />
+        <ModalProvider />
+        {children}
+      </QueryProvider>
     </ClerkProvider>
   );
 };

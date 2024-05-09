@@ -6,57 +6,44 @@ import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
+import { DeleteList } from "./schema";
 import { db } from "@/lib/db";
-import { CreateList } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const { orgId, userId } = auth();
   if (!orgId || !userId) {
     return {
-      error: "unauthorized!!!",
+      error: "Unauthorized!!",
     };
   }
-  const { boardId, title } = data;
+  const { id, boardId } = data;
   let list;
   try {
-    const board = await db.board.findUnique({
+    list = await db.list.delete({
       where: {
-        id: boardId,
-        orgId,
-      },
-    });
-    if (!board) {
-      return {
-        error: "Board not found",
-      };
-    }
-    const lastList = await db.list.findFirst({
-      where: { boardId: boardId },
-      orderBy: { order: "desc" },
-      select: { order: true },
-    });
-    const newOrder = lastList ? lastList.order + 1 : 1;
-    list = await db.list.create({
-      data: {
-        title,
-        boardId: boardId,
-        order: newOrder,
+        id,
+        boardId,
+        board: {
+          orgId,
+        },
       },
     });
     await createAuditLog({
       entityId: list.id,
       entityTitle: list.title,
       entityType: ENTITY_TYPE.LIST,
-      action: ACTION.CREATE,
+      action: ACTION.DELETE,
     });
   } catch (error) {
     return {
-      error: "Failed to Create List",
+      error: "Failed to delete the list",
     };
   }
   revalidatePath(`/board/${boardId}`);
-  return { data: list };
+  return {
+    data: list,
+  };
 };
 
-export const createList = createSafeAction(CreateList, handler);
+export const deleteList = createSafeAction(DeleteList, handler);

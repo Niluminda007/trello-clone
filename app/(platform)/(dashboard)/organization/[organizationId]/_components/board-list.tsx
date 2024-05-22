@@ -1,6 +1,5 @@
 import { HelpCircle, User2 } from "lucide-react";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
 import Hint from "@/components/hint";

@@ -24,7 +24,7 @@ const MarketingPage = () => {
         )}>
         <div className="mb-4 flex items-center border shadow-sm p-4 bg-black text-white rounded-full uppercase">
           <Rocket className="h-6 w-6 mr-2" />
-          Blast Off with TaskVista
+          Blast Off with Zeus
         </div>
         <h1 className="text-3xl md:text-6xl text-center text-neutral-800 mb-6">
           Elevate Your Team's Performance
@@ -40,10 +40,10 @@ const MarketingPage = () => {
         )}>
         Collaborate seamlessly, streamline projects, and achieve unprecedented
         productivity levels. From corporate skyscrapers to cozy home offices,
-        TaskVista empowers your team to soar to new heights of success.
+        Zeus empowers your team to soar to new heights of success.
       </div>
       <Button className="mt-6" size="lg" asChild>
-        <Link href={"sign-up"}>Get TaskVista</Link>
+        <Link href={"sign-up"}>Get Zeus</Link>
       </Button>
     </div>
   );

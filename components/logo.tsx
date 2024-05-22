@@ -14,13 +14,13 @@ const Logo = () => {
   return (
     <Link href="/">
       <div className="hover:opacity-75 transition items-center gap-x-2 hidden md:flex">
-        <Image src="/logo.png" alt="logo" height="40" width="40" />
+        <Image src="/logo.png" alt="logo" height="80" width="80" />
         <p
           className={cn(
             "text-lg text-neutral-700 pb-1",
             headingFont.className
           )}>
-          TaskVista
+          Zeus
         </p>
       </div>
     </Link>

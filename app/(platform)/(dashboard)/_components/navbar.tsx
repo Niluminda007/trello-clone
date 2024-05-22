@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+// import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const Navbar = () => {
           </Button>
         </FormPopOver>
       </div>
-      <div className="ml-auto flex items-center gap-x-2">
+      {/* <div className="ml-auto flex items-center gap-x-2">
         <OrganizationSwitcher
           hidePersonal
           afterCreateOrganizationUrl="/organization/:id"
@@ -58,7 +58,7 @@ const Navbar = () => {
             },
           }}
         />
-      </div>
+      </div> */}
     </nav>
   );
 };

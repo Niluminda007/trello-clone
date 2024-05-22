@@ -1,35 +1,38 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
 
-const isProtectedRoute = createRouteMatcher([
-  "/organization(.*)",
-  "/select-org",
-  "/board(.*)",
-  "/api/cards(.*)",
-]);
+import {
+  DEFAULT_LOGIN_REDIRECT,
+  apiAuthPrefix,
+  authRoutes,
+  publicRoutes,
+} from "@/routes";
+import authConfig from "@/auth.config";
 
-export default clerkMiddleware((auth, req) => {
-  if (auth().userId && !isProtectedRoute(req)) {
-    let path = "/select-org";
-    if (auth().orgId) {
-      path = `/organization/${auth().orgId}`;
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  if (isApiAuthRoute) {
+    return;
+  }
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    const orgSelection = new URL(path, req.url);
-    return NextResponse.redirect(orgSelection);
+    return;
   }
-  if (!auth().userId && isProtectedRoute(req)) {
-    return auth().redirectToSignIn();
+  if (!isLoggedIn && !isPublicRoute) {
+    return Response.redirect(new URL("/auth/login", nextUrl));
   }
-  if (
-    auth().userId &&
-    !auth().orgId &&
-    req.nextUrl.pathname !== "/select-org"
-  ) {
-    const orgSelection = new URL("/select-org", req.nextUrl);
-    return NextResponse.redirect(orgSelection);
-  }
+  return;
 });
 
+// Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

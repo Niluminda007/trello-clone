@@ -7,8 +7,8 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 const TestPage = () => {
   const user = useCurrentUser();
 
-  const onClick = () => {
-    logOut();
+  const onClick = async () => {
+    await logOut();
   };
   return (
     <div className="w-full h-full bg-yellow-700 flex flex-col">

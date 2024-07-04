@@ -27,8 +27,6 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         workspaceId: user.workspaceId,
       },
     });
-
-    console.log({ board });
     if (!board) {
       return {
         error: "Board not found",

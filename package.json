@@ -9,6 +9,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
+  "type": "module",
   "dependencies": {
     "@auth/prisma-adapter": "^2.1.0",
     "@hello-pangea/dnd": "^16.6.0",
@@ -60,7 +61,8 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/lodash": "^4.17.0",
-    "@types/node": "^20",
+    "@types/next": "^9.0.0",
+    "@types/node": "^20.14.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
@@ -68,6 +70,6 @@
     "postcss": "^8",
     "prisma": "^5.13.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5.5.3"
   }
 }

@@ -33,8 +33,8 @@ const MarketingPage = () => {
           <CheckCircle className="h-10 w-10 mb-2 animate-fade-in-slow" />
           <h3 className="text-xl font-semibold">Easy Task Management</h3>
           <p className="text-center text-sm">
-            Create, assign, and track tasks effortlessly with Quanta's intuitive
-            interface.
+            Create, assign, and track tasks effortlessly with Quanta&apos;s
+            intuitive interface.
           </p>
         </div>
         <div className="flex flex-col items-center p-4 bg-black rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300">
@@ -49,8 +49,8 @@ const MarketingPage = () => {
           <Layout className="h-10 w-10 mb-2 animate-fade-in-slow" />
           <h3 className="text-xl font-semibold">Customizable Workflows</h3>
           <p className="text-center text-sm">
-            Tailor your workflows to fit your team's unique needs and maximize
-            efficiency.
+            Tailor your workflows to fit your team&apos;s unique needs and
+            maximize efficiency.
           </p>
         </div>
       </div>

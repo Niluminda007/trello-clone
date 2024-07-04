@@ -12,14 +12,12 @@ import { toast } from "sonner";
 
 const SettingsProfilePage = () => {
   const { activeWorkspace: workspace } = useWorkspace();
-  if (!workspace) {
-    return null;
-  }
+
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
   const router = useRouter();
 
-  const initialName = workspace.name || "";
-  const initialDescription = workspace.description || "";
+  const initialName = workspace?.name || "";
+  const initialDescription = workspace?.description || "";
 
   useEffect(() => {
     setIsSaveDisabled(true);
@@ -43,7 +41,9 @@ const SettingsProfilePage = () => {
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
-    execute({ name, description, workspaceId: workspace.id });
+    if (workspace && workspace.id) {
+      execute({ name, description, workspaceId: workspace.id });
+    }
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLFormElement>) => {
@@ -58,6 +58,10 @@ const SettingsProfilePage = () => {
       name.value === initialName && description.value === initialDescription
     );
   };
+
+  if (!workspace) {
+    return null;
+  }
 
   return (
     <div className="w-full flex flex-col space-y-6 p-2 md:p-6 bg-white rounded-lg">

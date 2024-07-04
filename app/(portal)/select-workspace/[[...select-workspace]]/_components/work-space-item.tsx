@@ -26,7 +26,6 @@ export const WorkspaceItem = ({
     },
   });
   const onClick = () => {
-    console.log("hello");
     execute({ currentWorkspace: id });
   };
   return (

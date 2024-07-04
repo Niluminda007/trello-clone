@@ -11,9 +11,7 @@ export default function Model() {
   const sphereOneRef = useRef<Mesh>(null);
   const sphereTwoRef = useRef<Mesh>(null);
 
-  const { nodes, materials, animations, scene } = useGLTF(
-    "/threeD-models/robot_playground.glb"
-  );
+  const { animations, scene } = useGLTF("/threeD-models/robot_playground.glb");
 
   const { actions, clips } = useAnimations(animations, scene);
   const [animationProgress, setAnimationProgress] = useState(0);

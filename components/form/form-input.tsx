@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { ChangeEventHandler, forwardRef } from "react";
 import { useFormStatus } from "react-dom";
 
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ interface FormInputProps {
   className?: string;
   defaultValue?: string;
   onBlur?: () => void;
+  onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
@@ -35,6 +36,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       className,
       defaultValue = "",
       onBlur,
+      onChange,
     }: FormInputProps,
     ref
   ) => {
@@ -62,6 +64,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             disabled={pending || disabled}
             className={cn("text-sm px-2 py-1 h-7", className)}
             aria-describedby={`${id}-error`}
+            onChange={onChange}
           />
         </div>
         <FormErrors id={id} errors={errors} />

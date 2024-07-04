@@ -2,7 +2,7 @@
 
 import { ElementRef, useRef } from "react";
 
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +26,7 @@ interface FormPopOverProps {
   side?: "left" | "right" | "top" | "bottom";
   align?: "start" | "center" | "end";
   sideOffset?: number;
+  workspaceId: string;
 }
 
 const FormPopOver = ({
@@ -33,6 +34,7 @@ const FormPopOver = ({
   side = "bottom",
   align,
   sideOffset = 0,
+  workspaceId,
 }: FormPopOverProps) => {
   const router = useRouter();
   const proModal = useProModal();
@@ -42,7 +44,7 @@ const FormPopOver = ({
     onSuccess: (data) => {
       toast.success("Board Created!");
       closeRef.current?.click();
-      router.push(`/board/${data.id}`);
+      router.push(`/b/${data.id}`);
     },
     onError: (error) => {
       console.log({ error });

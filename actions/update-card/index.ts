@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
@@ -9,13 +8,13 @@ import { db } from "@/lib/db";
 import { createSafeAction } from "@/lib/create-safe-action";
 import { UpdateCard } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
-
-  if (!userId || !orgId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unauthorized",
+      error: "unauthorized",
     };
   }
   const { id, boardId, ...values } = data;
@@ -26,7 +25,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         id,
         list: {
           board: {
-            orgId,
+            workspaceId: user.workspaceId,
           },
         },
       },
@@ -45,7 +44,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to update.",
     };
   }
-  revalidatePath(`/baord/${boardId}`);
+  revalidatePath(`/b/${boardId}`);
   return {
     data: card,
   };

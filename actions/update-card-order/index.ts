@@ -1,19 +1,18 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
 import { UpdateCardOrder } from "./schema";
 import { db } from "@/lib/db";
-import { createAuditLog } from "@/lib/create-audit-log";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unauthorized",
+      error: "unauthorized",
     };
   }
   const { items, boardId } = data;
@@ -25,7 +24,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
           id: card.id,
           list: {
             board: {
-              orgId,
+              workspaceId: user.workspaceId,
             },
           },
         },

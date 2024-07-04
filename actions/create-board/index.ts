@@ -1,32 +1,23 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ACTION, ENTITY_TYPE } from "@prisma/client";
+import { ACTION, BoardRole, ENTITY_TYPE } from "@prisma/client";
 
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { createSafeAction } from "@/lib/create-safe-action";
 import { CreateBoard } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
-import { incrementAvailableCount, hasAvailableCount } from "@/lib/org-limit";
-import { checkSubscription } from "@/lib/subscription";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
-  if (!userId || !orgId) {
+  const user = await currentUser();
+  if (!user || !user.id || !user.workspaceId) {
     return {
-      error: "Unautorized",
+      error: "unauthorized",
     };
   }
-  const canCreate = await hasAvailableCount();
-  const isPro = await checkSubscription();
-  if (!canCreate && !isPro) {
-    return {
-      error:
-        "You reached your limit of free boards. Please upgrade to create more",
-    };
-  }
+
   const { title, image } = data;
   const [imageID, imageThumbUrl, imageFullUrl, imageLinkHTML, imageUserName] =
     image.split("|");
@@ -47,7 +38,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     board = await db.board.create({
       data: {
         title,
-        orgId,
+        workspaceId: user.workspaceId,
         imageID,
         imageThumbUrl,
         imageFullUrl,
@@ -55,9 +46,18 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         imageLinkHTML,
       },
     });
-    if (!isPro) {
-      await incrementAvailableCount();
+    if (!board) {
+      return {
+        error: "failed to create board",
+      };
     }
+    await db.boardMembership.create({
+      data: {
+        userId: user.id,
+        boardId: board.id,
+        role: BoardRole.ADMIN,
+      },
+    });
 
     await createAuditLog({
       entityId: board.id,
@@ -70,7 +70,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to create",
     };
   }
-  revalidatePath(`/board/${board.id}`);
+  revalidatePath(`/b/${board.id}`);
   return { data: board };
 };
 

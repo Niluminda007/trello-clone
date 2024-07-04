@@ -2,41 +2,47 @@
 
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
 import { CopyList } from "./schema";
 import { db } from "@/lib/db";
 import { createAuditLog } from "@/lib/create-audit-log";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unautorized!",
+      error: "unauthorized!",
     };
   }
   const { id, boardId } = data;
-  let list;
+
   try {
     const listToCopy = await db.list.findUnique({
       where: {
         id,
         boardId,
         board: {
-          orgId,
+          workspaceId: user.workspaceId,
         },
       },
       include: {
-        cards: true,
+        cards: {
+          include: {
+            cardLabels: true,
+          },
+        },
       },
     });
+
     if (!listToCopy) {
       return {
         error: "List not found",
       };
     }
+
     const lastList = await db.list.findFirst({
       where: {
         boardId,
@@ -46,8 +52,11 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         order: true,
       },
     });
+
     const newOrder = lastList ? lastList.order + 1 : 1;
-    list = await db.list.create({
+
+    // Create the new list and its cards
+    const newList = await db.list.create({
       data: {
         boardId: listToCopy.boardId,
         title: `${listToCopy.title} - Copy`,
@@ -62,25 +71,49 @@ const handler = async (data: InputType): Promise<ReturnType> => {
           },
         },
       },
-      include: {
-        cards: true,
+    });
+
+    // Find the newly created cards to map labels
+    const newCards = await db.card.findMany({
+      where: {
+        listId: newList.id,
       },
     });
+
+    // Create card labels for the new cards
+    const cardLabelTransactions = listToCopy.cards.flatMap((oldCard, index) =>
+      oldCard.cardLabels.map((cardLabel) =>
+        db.cardLabel.create({
+          data: {
+            cardId: newCards[index].id,
+            labelId: cardLabel.labelId,
+          },
+        })
+      )
+    );
+
+    await db.$transaction(cardLabelTransactions);
+
+    // Create an audit log entry
     await createAuditLog({
-      entityId: list.id,
-      entityTitle: list.title,
+      entityId: newList.id,
+      entityTitle: newList.title,
       entityType: ENTITY_TYPE.LIST,
       action: ACTION.CREATE,
     });
-  } catch (error) {
+
+    // Revalidate the path
+    revalidatePath(`/board/${boardId}`);
+
     return {
-      error: "Error Copy",
+      data: newList,
+    };
+  } catch (error) {
+    console.error(error); // Logging the error for debugging purposes
+    return {
+      error: "Error copying list",
     };
   }
-  revalidatePath(`/board/${boardId}`);
-  return {
-    data: list,
-  };
 };
 
 export const copyList = createSafeAction(CopyList, handler);

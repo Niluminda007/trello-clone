@@ -17,7 +17,7 @@ interface ActionsProps {
 }
 
 const Actions = ({ data }: ActionsProps) => {
-  const params = useParams<{ boardId: string }>();
+  const params = useParams<{ bId: string }>();
   const cardModal = useCardModal();
 
   const { execute: executeCopyCard, isLoading: isLoadingCopy } = useAction(
@@ -46,10 +46,10 @@ const Actions = ({ data }: ActionsProps) => {
     }
   );
   const onCopy = () => {
-    executeCopyCard({ id: data.id, boardId: params.boardId });
+    executeCopyCard({ id: data.id, boardId: params.bId });
   };
   const onDelete = () => {
-    executeDeleteCard({ id: data.id, boardId: params.boardId });
+    executeDeleteCard({ id: data.id, boardId: params.bId });
   };
 
   return (

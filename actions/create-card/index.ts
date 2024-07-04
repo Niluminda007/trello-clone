@@ -2,19 +2,19 @@
 
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
 import { CreateCard } from "./schema";
 import { db } from "@/lib/db";
 import { createAuditLog } from "@/lib/create-audit-log";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unauthorized",
+      error: "unauthorized",
     };
   }
   const { title, listId, boardId } = data;
@@ -24,7 +24,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       where: {
         id: listId,
         board: {
-          orgId,
+          workspaceId: user.workspaceId,
         },
       },
     });
@@ -59,7 +59,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to create",
     };
   }
-  revalidatePath(`/board/${boardId}`);
+  revalidatePath(`/b/${boardId}`);
   return { data: card };
 };
 

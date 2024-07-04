@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 
 import { createSafeAction } from "@/lib/create-safe-action";
@@ -9,10 +9,11 @@ import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateList } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
       error: "unauthorized!!!",
     };
@@ -23,9 +24,11 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     const board = await db.board.findUnique({
       where: {
         id: boardId,
-        orgId,
+        workspaceId: user.workspaceId,
       },
     });
+
+    console.log({ board });
     if (!board) {
       return {
         error: "Board not found",

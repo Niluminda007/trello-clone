@@ -24,7 +24,7 @@ interface DescriptionProps {
 
 const Description = ({ data }: DescriptionProps) => {
   const queryClient = useQueryClient();
-  const params = useParams<{ boardId: string }>();
+  const params = useParams<{ bId: string }>();
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -71,7 +71,7 @@ const Description = ({ data }: DescriptionProps) => {
     execute({
       id: data.id,
       description,
-      boardId: params.boardId,
+      boardId: params.bId,
     });
   };
   return (
@@ -104,7 +104,7 @@ const Description = ({ data }: DescriptionProps) => {
           <pre
             onClick={enableEditing}
             role="button"
-            className="min-h-[78px] max-h-[600px] overflow-y-scroll bg-neutral-200 text-sm font-medium py-3 px-3.5 rounded-md"
+            className="min-h-[78px] max-h-[200px] overflow-y-scroll bg-neutral-200 text-sm font-medium py-3 px-3.5 rounded-md"
             style={{ whiteSpace: "pre-wrap", overflowWrap: "break-word" }}>
             {data.description || "Add a more detailed description"}
           </pre>

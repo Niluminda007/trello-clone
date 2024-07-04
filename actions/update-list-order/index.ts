@@ -3,15 +3,15 @@
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
 import { UpdateListOrder } from "./schema";
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unauthorized!",
+      error: "unauthorized",
     };
   }
   const { items, boardId } = data;
@@ -22,7 +22,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         where: {
           id: list.id,
           board: {
-            orgId,
+            workspaceId: user.workspaceId,
           },
         },
         data: {
@@ -36,7 +36,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Faield to reorder",
     };
   }
-  revalidatePath(`/board/${boardId}`);
+  revalidatePath(`/b/${boardId}`);
   return {
     data: lists,
   };

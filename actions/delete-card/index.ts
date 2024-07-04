@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
@@ -9,12 +8,13 @@ import { InputType, ReturnType } from "./types";
 import { DeleteCard } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { orgId, userId } = auth();
-  if (!orgId || !userId) {
+  const user = await currentUser();
+  if (!user || !user.workspaceId) {
     return {
-      error: "Unauthorized!!",
+      error: "unauthorized",
     };
   }
   const { id, boardId } = data;
@@ -25,7 +25,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         id,
         list: {
           board: {
-            orgId,
+            workspaceId: user.workspaceId,
           },
         },
       },
@@ -41,7 +41,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to delete",
     };
   }
-  revalidatePath(`/board/${boardId}`);
+  revalidatePath(`/b/${boardId}`);
   return {
     data: card,
   };

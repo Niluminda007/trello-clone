@@ -7,7 +7,7 @@ export const publicRoutes: string[] = ["/"];
 
 /**
  * An array of routes that are used for authentication
- * These routes will redirect logged in users to /settings
+ * These routes will redirect logged-in users to /settings
  * @type {string[]}
  */
 export const authRoutes: string[] = [
@@ -21,13 +21,10 @@ export const authRoutes: string[] = [
  * Routes that start with this prefix are used for API authentication purposes
  * @type {string}
  */
-
 export const apiAuthPrefix: string = "/api/auth";
 
 /**
- * The default redirect path after logging in
- * Routes that start with this prefix are used for API authentication purposes
- * @type {string}
+ * An array of routes that are used for invitations
+ * @type {string[]}
  */
-
-export const DEFAULT_LOGIN_REDIRECT: string = "/test";
+export const inviteRoutes: string[] = ["/invite/*", "/api/invite/*"];

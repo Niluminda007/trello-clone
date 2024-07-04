@@ -17,7 +17,7 @@ interface HeaderProps {
 
 const Header = ({ data }: HeaderProps) => {
   const queryClient = useQueryClient();
-  const params = useParams<{ boardId: string }>();
+  const params = useParams<{ bId: string }>();
   const inputRef = useRef<ElementRef<"input">>(null);
 
   const [title, setTitle] = useState<string>(data.title);
@@ -46,7 +46,7 @@ const Header = ({ data }: HeaderProps) => {
     if (title === data.title) {
       return;
     }
-    execute({ id: data.id, title, boardId: params.boardId });
+    execute({ id: data.id, title, boardId: params.bId });
   };
   return (
     <div className="flex items-start gap-x-3 mb-6 w-full">

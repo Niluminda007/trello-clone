@@ -1,38 +1,52 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { ACTION, ENTITY_TYPE } from "@prisma/client";
+import { ACTION, BoardRole, ENTITY_TYPE } from "@prisma/client";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { DeleteBoard } from "./schema";
 import { createAuditLog } from "@/lib/create-audit-log";
-import { decreaseAvailableCount } from "@/lib/org-limit";
-import { checkSubscription } from "@/lib/subscription";
+import { currentUser } from "@/lib/auth";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { userId, orgId } = auth();
-  if (!userId || !orgId) {
+  const user = await currentUser();
+  if (!user || !user.id || !user.workspaceId) {
     return {
-      error: "Unauhthorized!!!",
+      error: "unauthorized",
     };
   }
-  const isPro = await checkSubscription();
+
   const { id } = data;
   let board;
+
   try {
+    const membership = await db.boardMembership.findUnique({
+      where: {
+        userId_boardId: {
+          userId: user.id,
+          boardId: id,
+        },
+      },
+    });
+    if (!membership) {
+      return {
+        error: "User is not part of the board",
+      };
+    }
+    if (membership.role !== BoardRole.ADMIN) {
+      return {
+        error: "Only Admin's can delete the board",
+      };
+    }
     board = await db.board.delete({
       where: {
         id,
-        orgId,
+        workspaceId: user.workspaceId,
       },
     });
-    if (!isPro) {
-      await decreaseAvailableCount();
-    }
 
     await createAuditLog({
       entityId: board.id,
@@ -45,8 +59,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Failed to delete the Board",
     };
   }
-  revalidatePath(`/organization/${orgId}`);
-  redirect(`/organization/${orgId}`);
+  revalidatePath(`/w/${user.workspaceId}`);
+  redirect(`/w/${user.workspaceId}`);
 };
 
 export const deleteBoard = createSafeAction(DeleteBoard, handler);

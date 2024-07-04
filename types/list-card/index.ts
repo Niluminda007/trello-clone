@@ -1,5 +1,11 @@
-import { Card, List } from "@prisma/client";
+import { Card, CardLabel, Label, List } from "@prisma/client";
 
-export type ListWithCards = List & { cards: Card[] };
+export type ExtendedLabel = Label & { checked: boolean };
 
-export type CardWithList = Card & { list: List };
+export type ExtendedCardLabel = CardLabel & { label: Label };
+
+export type CardWithLabels = Card & { cardLabels: ExtendedCardLabel[] };
+
+export type ListWithCards = List & { cards: CardWithLabels[] };
+
+export type CardWithList = CardWithLabels & { list: List };

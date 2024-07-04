@@ -22,17 +22,82 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  password      String?
-  role          UserRole  @default(USER)
-  accounts      Account[]
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String?   @unique
+  emailVerified          DateTime? @map("email_verified")
+  image                  String?
+  password               String?
+  accentColor            String?
+  role                   UserRole  @default(USER)
+  accounts               Account[]
 
+  memberships            Membership[] @relation("UserMemberships")
+  boardMemberships       BoardMembership[] @relation("UserBoardMemberships")
+  activeWorkspace        String?
+  
   @@map("users")
 }
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model Membership {
+  id          String        @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserMemberships")
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade, name: "WorkspaceMembers")
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  @@unique([userId, workspaceId])
+}
+
+model Workspace {
+  id                            String                       @id @default(cuid())
+  name                          String
+  description                   String?
+
+  adminId                       String
+  members                       Membership[]                 @relation("WorkspaceMembers")
+  workspaceGuestMemberships     WorkspaceGuestMembership[]   @relation("WorkspaceGuestMemberships")
+  inviteTokens                  WorkspaceInviteToken[]       @relation("WorkspaceInviteTokens")
+
+  boards                         Board[]
+  createdAt                      DateTime                    @default(now())
+  updatedAt                      DateTime                    @updatedAt
+}
+
+model WorkspaceGuestMembership {
+  id            String  @id @default(uuid())
+  email         String
+  workspaceId   String
+  accentColor   String
+
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], name: "WorkspaceGuestMemberships", onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([email, workspaceId])
+}
+
+
+model WorkspaceInviteToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  workspaceId   String
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], name: "WorkspaceInviteTokens", onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 model Account {
   id                 String  @id @default(cuid())
@@ -59,22 +124,73 @@ enum UserRole {
   USER
 }
 
+model InviteToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], name: "BoardInviteTokens", onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
 
 model Board{
-  id            String @id @default(uuid())
-  orgId         String
-  title         String
-  imageID       String
-  imageThumbUrl String @db.Text
-  imageFullUrl  String @db.Text
-  imageUserName String @db.Text
-  imageLinkHTML String @db.Text
+  id                         String @id @default(uuid())
+  workspaceId                String
+  title                      String
+  imageID                    String
+  imageThumbUrl              String @db.Text
+  imageFullUrl               String @db.Text
+  imageUserName              String @db.Text
+  imageLinkHTML              String @db.Text
 
-  lists         List[]
+  lists                      List[]
+  boardMemberships           BoardMembership[] @relation("BoardMemberships")
+  boardGuestMemberships      BoardGuestMembership[] @relation("BoardGuestMemberships")
+  inviteTokens               InviteToken[] @relation("BoardInviteTokens")
 
+  workspace                  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+enum BoardRole {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model BoardGuestMembership {
+  id            String  @id @default(uuid())
+  email         String
+  boardId       String
+  accentColor   String
+
+  board         Board   @relation(fields: [boardId], references: [id], name: "BoardGuestMemberships", onDelete: Cascade)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@unique([email, boardId])
 }
+model BoardMembership{
+  id            String @id @default(uuid())
+  userId        String
+  boardId       String
+  role          BoardRole
+
+  user   User   @relation(fields: [userId], references: [id], name: "UserBoardMemberships", onDelete: Cascade)
+  board  Board  @relation(fields: [boardId], references: [id], name: "BoardMemberships", onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+   @@unique([userId, boardId])
+
+}
+
+
 
 model List {
   id            String @id @default(uuid())
@@ -97,42 +213,69 @@ model Card {
   title         String
   order         Int
   description   String? @db.Text
-
-  listId       String
-  list         List @relation(fields: [listId],references: [id], onDelete: Cascade)
+  
+  listId        String
+  list          List @relation(fields: [listId], references: [id], onDelete: Cascade)
+  cardLabels    CardLabel[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([listId])
 }
+model Label {
+  id            String @id @default(uuid())
+  title         String?
+  color         String
+  cardLabels    CardLabel[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CardLabel {
+  cardId        String
+  labelId       String
+
+  card          Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label         Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, labelId])
+  @@index([cardId])
+  @@index([labelId])
+}
 
 enum ACTION {
+  ADDED
   CREATE
   DELETE
   UPDATE
-
+  LEAVE
 }
 
 enum ENTITY_TYPE {
+  WORKSPACE
   BOARD
   LIST
   CARD
+  LABEL
+  MEMBER
+  BOARDMEMBER
 }
 
 model AuditLog {
-  id          String @id @default(uuid())
-  orgId       String
-  action      ACTION
-  entityId    String
-  entityType  ENTITY_TYPE
-  entityTitle String
-  userId      String
-  userImage   String @db.Text
-  userName    String @db.Text
+  id                String @id @default(uuid())
+  workspaceId       String
+  action            ACTION
+  entityId          String
+  entityType        ENTITY_TYPE
+  entityTitle       String
+  userId            String
+  userImage         String @db.Text
+  userName          String @db.Text
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model OrgLimit {
@@ -153,3 +296,5 @@ model OrgSubscription{
   stripePriceId          String @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
 }
+
+

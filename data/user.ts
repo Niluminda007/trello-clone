@@ -14,8 +14,8 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
-export const getUserByID = async (id: string | undefined) => {
-  if (id === undefined) {
+export const getUserByID = async (id: string | undefined | null) => {
+  if (!id) {
     return null;
   }
   try {

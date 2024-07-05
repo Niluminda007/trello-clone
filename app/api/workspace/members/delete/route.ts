@@ -32,7 +32,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Validate request payload
-
     const { memberId }: { memberId: string } = await req.json();
     if (!memberId) {
       return NextResponse.json({ error: "Missing Fields" }, { status: 400 });
@@ -40,12 +39,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // Check if the member exists
     const currentMember = await db.membership.findUnique({
-      where: {
-        id: memberId,
-      },
-      include: {
-        user: true,
-      },
+      where: { id: memberId },
+      include: { user: true },
     });
 
     if (!currentMember) {
@@ -70,13 +65,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 400 }
       );
     }
-    // Delete the member
 
+    // Delete the member
     const deletedMembership = await db.membership.delete({
-      where: {
-        id: memberId,
-      },
+      where: { id: memberId },
     });
+
+    // Delete the board memberships of the workspace member
+    const memberAssociatedWorkspaceBoards = await db.board.findMany({
+      where: { workspaceId: deletedMembership.workspaceId },
+    });
+
+    if (memberAssociatedWorkspaceBoards.length > 0) {
+      const transaction = memberAssociatedWorkspaceBoards.map((board) =>
+        db.boardMembership.delete({
+          where: {
+            userId_boardId: {
+              boardId: board.id,
+              userId: deletedMembership.userId,
+            },
+          },
+        })
+      );
+      await db.$transaction(transaction);
+    }
 
     return NextResponse.json({ data: deletedMembership }, { status: 200 });
   } catch (error) {

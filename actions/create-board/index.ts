@@ -33,9 +33,9 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       error: "Missing fields. Failed to create board.",
     };
   }
-  let board;
+
   try {
-    board = await db.board.create({
+    const board = await db.board.create({
       data: {
         title,
         workspaceId: user.workspaceId,
@@ -51,7 +51,9 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         error: "failed to create board",
       };
     }
-    await db.boardMembership.create({
+
+    // Add the current user as an admin of the board
+    const adminMembership = await db.boardMembership.create({
       data: {
         userId: user.id,
         boardId: board.id,
@@ -59,19 +61,44 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       },
     });
 
+    // Add all workspace members as board members
+    const workspaceMembers = await db.membership.findMany({
+      where: {
+        workspaceId: board.workspaceId,
+        NOT: {
+          userId: adminMembership.userId,
+        },
+      },
+    });
+    console.log(workspaceMembers);
+    if (workspaceMembers.length > 0) {
+      const transaction = workspaceMembers.map((member) =>
+        db.boardMembership.create({
+          data: {
+            userId: member.userId,
+            boardId: board.id,
+            role: BoardRole.MEMBER,
+          },
+        })
+      );
+      await db.$transaction(transaction);
+    }
+
     await createAuditLog({
       entityId: board.id,
       entityTitle: board.title,
       entityType: ENTITY_TYPE.BOARD,
       action: ACTION.CREATE,
     });
+
+    revalidatePath(`/b/${board.id}`);
+    return { data: board };
   } catch (error) {
+    console.error("Failed to create board:", error);
     return {
       error: "Failed to create",
     };
   }
-  revalidatePath(`/b/${board.id}`);
-  return { data: board };
 };
 
 export const createBoard = createSafeAction(CreateBoard, handler);

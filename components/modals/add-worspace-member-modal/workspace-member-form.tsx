@@ -27,6 +27,9 @@ export const WorkspaceMemberForm = () => {
     onSuccess: async (data) => {
       if (data) {
         toast.success(`${data} member added`);
+        queryClient.invalidateQueries({
+          queryKey: ["workspace-members", params.wId!],
+        });
       }
     },
     onError: (error) => {

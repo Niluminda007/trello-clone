@@ -79,6 +79,7 @@ model WorkspaceGuestMembership {
   email         String
   workspaceId   String
   accentColor   String
+  prospectRole  WorkspaceRole
 
   workspace     Workspace   @relation(fields: [workspaceId], references: [id], name: "WorkspaceGuestMemberships", onDelete: Cascade)
   createdAt     DateTime @default(now())
@@ -168,6 +169,7 @@ model BoardGuestMembership {
   email         String
   boardId       String
   accentColor   String
+  prospectRole  BoardRole
 
   board         Board   @relation(fields: [boardId], references: [id], name: "BoardGuestMemberships", onDelete: Cascade)
   createdAt     DateTime @default(now())

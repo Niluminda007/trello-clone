@@ -10,7 +10,7 @@ import { FaUser } from "react-icons/fa";
 import Image from "next/image";
 
 interface UserAvatarProps {
-  name: string;
+  name?: string;
   image?: string;
   email?: string;
   className?: string;

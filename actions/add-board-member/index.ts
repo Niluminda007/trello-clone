@@ -28,6 +28,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
           email: email,
           boardId: boardId,
           accentColor: getRandomColor(),
+          prospectRole: role,
         },
       });
       return {

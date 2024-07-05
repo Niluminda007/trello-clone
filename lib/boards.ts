@@ -68,7 +68,11 @@ export const promoteGuestBoardMemberToMember = async (
       return;
     }
 
-    await createBoardMembershipForUser(guestMembership.boardId, userId);
+    await createBoardMembershipForUser(
+      guestMembership.boardId,
+      userId,
+      guestMembership.prospectRole
+    );
 
     await updateDbUserProperties(userId, {
       accentColor: guestMembership.accentColor,

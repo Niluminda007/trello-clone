@@ -31,6 +31,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
           email,
           workspaceId,
           accentColor: getRandomColor(),
+          prospectRole: role,
         },
       });
       return {

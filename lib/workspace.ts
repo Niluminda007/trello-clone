@@ -35,6 +35,7 @@ export const createWorkspaceMembershipForUser = async (
   role: WorkspaceRole = "MEMBER"
 ): Promise<(Membership & { user: User }) | undefined> => {
   try {
+    console.log(role);
     return await db.membership.create({
       data: {
         userId: userId,
@@ -104,7 +105,8 @@ export const promoteGuestWorkspaceMemberToMember = async (
     }
     const membership = await createWorkspaceMembershipForUser(
       userId,
-      guestMembership.workspaceId
+      guestMembership.workspaceId,
+      guestMembership.prospectRole
     );
     if (membership) {
       addWorkspaceMemberToAllBoards(userId, membership.workspaceId);

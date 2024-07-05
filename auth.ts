@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import { getUserByID } from "@/data/user";
 import { getAccountByUserId } from "@/data/account";
 import { cookies } from "next/headers";
-import { updateBoardGuestToBoardMember } from "./lib/members";
 import { getRandomColor } from "./lib/utils";
 
 import {

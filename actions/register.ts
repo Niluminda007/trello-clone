@@ -9,8 +9,13 @@ import { getUserByEmail } from "@/data/user";
 import { updateBoardGuestToBoardMember } from "@/lib/members";
 import { getRandomColor } from "@/lib/utils";
 
-import { promoteGuestWorkspaceMemberToMember } from "@/lib/workspace";
+import {
+  createWorkspaceMembershipForInvitedUser,
+  promoteGuestWorkspaceMemberToMember,
+} from "@/lib/workspace";
 import { signIn } from "@/auth";
+import { cookies } from "next/headers";
+import { createBoardMembershipForInvitedUser } from "@/lib/boards";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   try {
@@ -38,15 +43,28 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         accentColor: getRandomColor(),
       },
     });
-
+    let redirectUrl = "/select-workspace";
     if (newUser && newUser.email) {
       // if the user trying to register is a guest member of a board
       await updateBoardGuestToBoardMember(email, newUser.id);
 
       // check if the user trying to register is a guest workspace member if so create all board memberships for existing boards
       await promoteGuestWorkspaceMemberToMember(newUser.id, newUser.email);
+      // // handle invited users to the baord
+      // const boardId = cookies().get("invited-board-id")?.value;
+      // if (boardId) {
+      //   await createBoardMembershipForInvitedUser(boardId, newUser.id);
+      //   redirectUrl = `/b/${boardId}`;
+      // }
+
+      // // handle invited users to the workspace
+      // const workspaceId = cookies().get("invited-workspace-id")?.value;
+      // if (workspaceId) {
+      //   createWorkspaceMembershipForInvitedUser(workspaceId, newUser.id);
+      //   redirectUrl = `/w/${workspaceId}`;
+      // }
     }
-    const redirectUrl = "/select-workspace";
+
     await signIn("credentials", {
       email: email,
       password: password,

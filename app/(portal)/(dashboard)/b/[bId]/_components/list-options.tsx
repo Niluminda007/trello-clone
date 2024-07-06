@@ -107,7 +107,7 @@ const ListOptions = ({ data, onAddCard }: ListOptionsProps) => {
           <FormSubmit
             variant="ghost"
             className="rounded-none w-full h-auto p-2 px-5 justify-start font-normal text-sm">
-            Delte this list...
+            Delete this list...
           </FormSubmit>
         </form>
       </PopoverContent>

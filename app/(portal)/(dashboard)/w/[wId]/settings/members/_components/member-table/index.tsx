@@ -23,7 +23,7 @@ export const MembersTable = ({ workspaceId }: MembersTableProps) => {
       }),
     enabled: !!workspaceId,
   });
-  console.log(members);
+
   if (!members) {
     return null;
   }

@@ -70,7 +70,6 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         },
       },
     });
-    console.log(workspaceMembers);
     if (workspaceMembers.length > 0) {
       const transaction = workspaceMembers.map((member) =>
         db.boardMembership.create({

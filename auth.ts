@@ -38,12 +38,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.user.email = token.email!;
         session.user.isOAuth = token.isOAuth as boolean;
       }
+
       if (token.workspaceId) {
         session.user.workspaceId = token.workspaceId;
       }
       return session;
     },
-    async jwt({ account, token, user }) {
+    async jwt({ token, user }) {
       if (!token.sub) return token;
       const existingUser = await getUserByID(token.sub);
       if (!existingUser) return token;
@@ -109,9 +110,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       token.name = existingUser.name;
       token.email = existingUser.email;
       token.role = existingUser.role;
+
       if (existingUser.activeWorkspace) {
         token.workspaceId = existingUser.activeWorkspace;
       }
+
       return { ...token, ...user };
     },
   },

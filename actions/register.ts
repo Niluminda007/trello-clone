@@ -10,6 +10,7 @@ import { updateBoardGuestToBoardMember } from "@/lib/members";
 import { getRandomColor } from "@/lib/utils";
 
 import { promoteGuestWorkspaceMemberToMember } from "@/lib/workspace";
+import { signIn } from "@/auth";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   try {
@@ -45,8 +46,14 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       // check if the user trying to register is a guest workspace member if so create all board memberships for existing boards
       await promoteGuestWorkspaceMemberToMember(newUser.id, newUser.email);
     }
+    const redirectUrl = "/select-workspace";
+    await signIn("credentials", {
+      email: email,
+      password: password,
+      redirect: false,
+    });
 
-    return { success: "Account created Successfully!" };
+    return { success: "Account created Successfully!", url: redirectUrl };
   } catch (error) {
     return {
       error: "Unable to register the user",

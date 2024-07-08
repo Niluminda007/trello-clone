@@ -7,8 +7,8 @@ export const WorkspaceWrapper = async () => {
   const workspaces = await getUserWorkspaces();
 
   return (
-    <div className="w-full max-w-6xl flex flex-col items-center bg-gray-50">
-      <div className="flex-1 w-full mx-auto p-8">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+      <div className="w-full max-w-6xl flex-1 mx-auto p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-700">
             Select a Workspace to Continue

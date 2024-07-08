@@ -35,9 +35,7 @@ export const WorkspaceItem = ({
       <button
         disabled={isLoading}
         onClick={onClick}
-        className={`"flex flex-col items-center cursor-pointer bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg shadow-xl " ${
-          !isLoading ? "transform transition-transform hover:scale-105" : ""
-        }`}>
+        className="flex flex-col items-center cursor-pointer bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg shadow-xl transform transition-transform hover:scale-105">
         <span className="w-24 h-24 flex items-center justify-center bg-white text-black text-3xl rounded-full uppercase mb-4">
           {generateInitials(name)}
         </span>

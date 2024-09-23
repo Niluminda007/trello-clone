@@ -55,7 +55,7 @@ const CardModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="absolute md:top-[30%] w-[80%] md:w-full">
+      <DialogContent className="absolute w-[80%] md:w-full">
         <DialogHeader>
           <DialogTitle>
             {!cardData ? <Header.Skeleton /> : <Header data={cardData} />}

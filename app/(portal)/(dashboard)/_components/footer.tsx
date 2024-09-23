@@ -2,7 +2,7 @@ import React from "react";
 
 export const Footer = () => {
   return (
-    <footer className="fixed h-[80px] bottom-0 w-full bg-white shadow-inner py-4 mt-8">
+    <footer className="fixed h-[80px] bottom-0 w-full bg-white shadow-inner py-4 mt-8 z-[-10]">
       <div className=" mx-auto flex justify-between items-center px-6">
         <p className="text-gray-600">&copy; 2024 Quanta</p>
         <nav className="space-x-4">

@@ -8,12 +8,14 @@ import { BoardRole } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { Crown } from "lucide-react";
 import { ViewBoardMembers } from "./view-board-members";
+import useMediaQuery from "@/hooks/use-mediaQuery";
 
 interface BoardMembersProps {
   boardId: string;
 }
 
 export const BoardMembers = ({ boardId }: BoardMembersProps) => {
+  const { isMobile, isTablet, isTabletLandscape, isDesktop } = useMediaQuery();
   const {
     data: members,
     isLoading,
@@ -40,15 +42,35 @@ export const BoardMembers = ({ boardId }: BoardMembersProps) => {
     return null;
   }
 
-  const displayMemberCount = members.length > 5 ? members.length - 5 : 0;
-  const trimmedMembers = members.slice(0, 5);
+  const MEMBER_DISPLAY_RESPONSIVE = {
+    sm: 1,
+    md: 2,
+    lg: 3,
+  };
+
+  const screenSize = isMobile
+    ? "sm"
+    : isTablet || isTabletLandscape
+    ? "md"
+    : isDesktop
+    ? "lg"
+    : "lg";
+
+  const MAX_MEMBER_DISPLAY_COUNT = MEMBER_DISPLAY_RESPONSIVE[screenSize] || 4;
+
+  const displayMemberCount = Math.max(
+    members.length - MAX_MEMBER_DISPLAY_COUNT,
+    0
+  );
+  const trimmedMembers = members.slice(0, MAX_MEMBER_DISPLAY_COUNT);
 
   return (
-    <div className="max-w-[15rem] flex gap-2 items-center justify-center">
+    <div className="max-w-[15rem] lg:max-w-fit flex lg:gap-2 items-center justify-center">
       {trimmedMembers.map(({ id, name, image, accentColor, role, email }) => (
         <div
           key={`b_mem${id}`}
-          className="relative w-12 h-12 flex items-center justify-center">
+          className="relative w-12 h-12 flex items-center justify-center"
+        >
           <UserAvatar
             name={name}
             image={image}

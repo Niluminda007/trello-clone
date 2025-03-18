@@ -11,9 +11,9 @@ interface BoardNavbarProps {
 
 const BoardNavbar = async ({ data }: BoardNavbarProps) => {
   return (
-    <div className="w-full h-14 z-[40] bg-black/50 absolute top-0 flex items-center px-6 gap-x-4 text-white">
+    <div className="w-full overflow-hidden h-max z-[40] bg-black/50 absolute top-0 flex flex-col-reverse lg:flex-row items-center justify-center px-2 md:px-3 lg:px-6 gap-x-2 lg:gap-x-4 text-white">
       <BoardTitleForm data={data} />
-      <div className="ml-auto flex gap-x-2 items-center justify-center">
+      <div className="ml-0 lg:ml-auto flex gap-x-2 items-center justify-center">
         <BoardMembers boardId={data.id} />
         <ShareBoard />
         <BoardOptions id={data.id} />

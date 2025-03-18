@@ -34,9 +34,11 @@ export const WorkspaceList = ({ workspaces }: WorkspaceListProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {workspaces.map(({ id, name, description }) => (
           <div
+            key={`${id}_${name}`}
             role="button"
             onClick={() => onClick(id)}
-            className="flex flex-col items-center cursor-pointer bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg shadow-xl transform transition-transform hover:scale-105">
+            className="flex flex-col items-center cursor-pointer bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg shadow-xl transform transition-transform hover:scale-105"
+          >
             <span className="w-24 h-24 flex items-center justify-center bg-white text-black text-3xl rounded-full uppercase mb-4">
               {generateInitials(name)}
             </span>

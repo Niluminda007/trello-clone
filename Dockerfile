@@ -1,19 +1,22 @@
 # Stage 1: Build
 FROM node:22-bookworm AS builder
-
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
 
+# 🔑 Make the var available at build time
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
 RUN npx prisma generate
-RUN npm run build
+# Make sure the var is present for the build command
+RUN NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} npm run build
 
 # Stage 2: Production
 FROM node:22-bookworm
-
 WORKDIR /app
 ENV NODE_ENV=production
 

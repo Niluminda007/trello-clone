@@ -24,7 +24,7 @@ export const BoardMembers = ({ boardId }: BoardMembersProps) => {
     queryKey: ["board-members", boardId],
     queryFn: () =>
       fetcher({
-        url: `/board/members`,
+        url: `board/members`,
         method: "POST",
         data: { boardId },
       }),

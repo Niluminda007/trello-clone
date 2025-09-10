@@ -5,7 +5,8 @@ export const AuthBackground = () => {
       style={{
         background: `no-repeat center url(/auth-background.jpg) `,
         backgroundSize: "cover",
-      }}>
+      }}
+    >
       <div className="w-full h-full bg-[rgba(0,0,0,.4)]"></div>
     </div>
   );
